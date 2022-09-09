@@ -38,7 +38,7 @@ jobs:
       - name: Test
         shell: cmd
         run: |
-          call "scripts/install/build_windows.bat"
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           powershell -command "./scripts/test/test.ps1 'C:\Program Files (x86)\Intel\oneAPI'"
         env:
           VS_VER: vs2022
