@@ -23,7 +23,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ${{ steps.set-install-path.outputs.install-path }}
-        key: ifort-${{ runner.os }}-${{ hashFiles('action.yml', '**/scripts/install/cache_exclude_linux.sh') }}
+        key: ifort-${{ runner.os }}-${{ hashFiles('action.yml') }}
 
     - name: Install ifort (Linux)
       if: runner.os == 'Linux' && steps.cache-install-linux.outputs.cache-hit != 'true'
@@ -33,6 +33,12 @@ runs:
       env:
         HPCKIT_URL: ${{ steps.set-resources-linux.outputs.hpckit_url }}
         FORTRAN: ${{ steps.set-resources-linux.outputs.fortran }}
+
+    - name: Exclude unused files from cache (Linux)
+      shell: bash
+      if: runner.os == 'Linux' && steps.cache-install-linux.outputs.cache-hit != 'true'
+      run: |
+        ./scripts/install/cache_exclude_linux.sh
 
     - name: Set resources (Mac)
       id: set-resources-macos
@@ -71,7 +77,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: C:\Program Files (x86)\Intel\oneAPI
-        key: ifort-${{ runner.os }}-${{ hashFiles('action.yml', 'scripts/install/cache_exclude_windows.sh') }}
+        key: ifort-${{ runner.os }}-${{ hashFiles('action.yml') }}
 
     - name: Install ifort (Windows)
       if: runner.os == 'Windows' && steps.cache-install-windows.outputs.cache-hit != 'true'
@@ -81,3 +87,10 @@ runs:
       env:
         HPCKIT_URL: ${{ steps.set-resources-windows.outputs.hpckit_url }}
         FORTRAN: ${{ steps.set-resources-windows.outputs.fortran }}
+
+    - name: Exclude unused files from cache (Windows)
+      shell: bash
+      if: runner.os == 'Windows' && steps.cache-install-windows.outputs.cache-hit != 'true'
+      run: |
+        ./scripts/install/cache_exclude_windows.sh
+
