@@ -50,67 +50,109 @@ runs:
         echo "INTEL_HPCKIT_INSTALL_PATH=$normalized" | Out-File -FilePath "$env:GITHUB_ENV" -Encoding utf8 -Append
         md -Force "$normalized"  
 
-    - name: Set HPC kit environment variables
-      shell: bash
-      run: |
-        echo "setting HPC toolkit variables"
-        version="2022.3.0"
-        if [ "$RUNNER_OS" == "Linux" ]; then
-          echo "INTEL_HPCKIT_INSTALLER_URL=https://registrationcenter-download.intel.com/akdlm/irc_nas/18856/l_HPCKit_p_$version.8751_offline.sh" >> $GITHUB_ENV
-          echo "INTEL_HPCKIT_COMPONENTS=intel.oneapi.lin.dpcpp-cpp-compiler-pro:intel.oneapi.lin.ifort-compiler" >> $GITHUB_ENV
-        elif [ "$RUNNER_OS" == "macOS" ]; then
-          echo "INTEL_HPCKIT_INSTALLER_URL=https://registrationcenter-download.intel.com/akdlm/irc_nas/18866/m_HPCKit_p_$version.8685_offline.dmg" >> $GITHUB_ENV
-          echo "INTEL_HPCKIT_COMPONENTS=intel.oneapi.mac.cpp-compiler:intel.oneapi.mac.ifort-compiler" >> $GITHUB_ENV
-        else
-          echo "INTEL_HPCKIT_INSTALLER_URL=https://registrationcenter-download.intel.com/akdlm/irc_nas/18857/w_HPCKit_p_$version.9564_offline.exe" >> $GITHUB_ENV
-          echo "INTEL_HPCKIT_COMPONENTS=intel.oneapi.win.cpp-compiler:intel.oneapi.win.ifort-compiler" >> $GITHUB_ENV
-        fi
+    # - name: Set HPC kit environment variables
+    #   shell: bash
+    #   run: |
+    #     echo "setting HPC toolkit variables"
+    #     version="2022.3.0"
+    #     if [ "$RUNNER_OS" == "Linux" ]; then
+    #       echo "INTEL_HPCKIT_INSTALLER_URL=https://registrationcenter-download.intel.com/akdlm/irc_nas/18856/l_HPCKit_p_$version.8751_offline.sh" >> $GITHUB_ENV
+    #       echo "INTEL_HPCKIT_COMPONENTS=intel.oneapi.lin.dpcpp-cpp-compiler-pro:intel.oneapi.lin.ifort-compiler" >> $GITHUB_ENV
+    #     elif [ "$RUNNER_OS" == "macOS" ]; then
+    #       echo "INTEL_HPCKIT_INSTALLER_URL=https://registrationcenter-download.intel.com/akdlm/irc_nas/18866/m_HPCKit_p_$version.8685_offline.dmg" >> $GITHUB_ENV
+    #       echo "INTEL_HPCKIT_COMPONENTS=intel.oneapi.mac.cpp-compiler:intel.oneapi.mac.ifort-compiler" >> $GITHUB_ENV
+    #     else
+    #       echo "INTEL_HPCKIT_INSTALLER_URL=https://registrationcenter-download.intel.com/akdlm/irc_nas/18857/w_HPCKit_p_$version.9564_offline.exe" >> $GITHUB_ENV
+    #       echo "INTEL_HPCKIT_COMPONENTS=intel.oneapi.win.cpp-compiler:intel.oneapi.win.ifort-compiler" >> $GITHUB_ENV
+    #     fi
  
-        echo "using HPC toolkit version $version"
-        echo "INTEL_HPCKIT_VERSION=$version" >> $GITHUB_ENV
-        
-    - name: Hide GNU tar
-      if: runner.os == 'windows'
-      shell: bash
-      run: |
-        # hide GNU tar (can't handle symlinks) so default Windows tar is used
-        mv "C:\Program Files\Git\usr\bin\tar.exe" "$RUNNER_TEMP\tar.exe"
+    #     echo "using HPC toolkit version $version"
+    #     echo "INTEL_HPCKIT_VERSION=$version" >> $GITHUB_ENV
 
-    - name: Restore cache
-      id: cache-ifort
-      uses: martijnhols/actions-cache/restore@v3
-      with:
-        path: ${{ env.INTEL_HPCKIT_INSTALL_PATH }}
-        key: intelfortran-${{ runner.os }}-${{ env.INTEL_HPCKIT_VERSION }}-${{ env.INTEL_HPCKIT_COMPONENTS }}
-
-    - name: Restore GNU tar
-      if: runner.os == 'windows'
+    - name: Set installer environment variables
       shell: bash
-      run: |
-        # restore GNU tar
-        mv "$RUNNER_TEMP\tar.exe" 'C:\Program Files\Git\usr\bin\tar.exe'
+      run: python3 scripts/set_installer_env.py
+
+    # - name: Hide GNU tar
+    #   if: runner.os == 'windows'
+    #   shell: bash
+    #   run: |
+    #     # hide GNU tar (can't handle symlinks) so default Windows tar is used
+    #     mv "C:\Program Files\Git\usr\bin\tar.exe" "$RUNNER_TEMP\tar.exe"
+
+    # - name: Restore cache
+    #   id: cache-ifort
+    #   uses: martijnhols/actions-cache/restore@v3
+    #   with:
+    #     path: ${{ env.INTEL_HPCKIT_INSTALL_PATH }}
+    #     key: intelfortran-${{ runner.os }}-${{ env.INTEL_HPCKIT_VERSION }}-${{ env.INTEL_HPCKIT_COMPONENTS }}
+
+    # - name: Restore GNU tar
+    #   if: runner.os == 'windows'
+    #   shell: bash
+    #   run: |
+    #     # restore GNU tar
+    #     mv "$RUNNER_TEMP\tar.exe" 'C:\Program Files\Git\usr\bin\tar.exe'
 
     - name: Install compilers
-      if: runner.os != 'Windows' && steps.cache-ifort.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        echo "downloading and running HPC kit installer"
-        os=$(echo $RUNNER_OS | tr '[:upper:]' '[:lower:]')
-        "${{ github.action_path }}/scripts/install_$os.sh" "${{ env.INTEL_HPCKIT_INSTALL_PATH }}" "${{ env.INTEL_HPCKIT_INSTALLER_URL }}" "${{ env.INTEL_HPCKIT_COMPONENTS }}"
+        # download and install compilers
+        echo "downloading and installing compilers"
+        
+        if [ "${{ runner.os }}" == "Linux" ]; then
+          curl -L -o cpp_installer.sh $INTEL_CPP_COMPILER_INSTALLER_URL
+          curl -L -o ftn_installer.sh $INTEL_FTN_COMPILER_INSTALLER_URL
+        
+          chmod +x cpp_installer.sh
+          chmod +x ftn_installer.sh
+        
+          ./cpp_installer.sh -a --install-dir $INTEL_HPCKIT_INSTALL_PATH --action install --eula=accept --log-dir=.
+          ./ftn_installer.sh -a --install-dir $INTEL_HPCKIT_INSTALL_PATH --action install --eula=accept --log-dir=.
+        elif [ "${{ runner.os }}" == "macOS" ]; then
+          curl -L -o cpp_installer.dmg $INTEL_CPP_COMPILER_INSTALLER_URL
+          curl -L -o ftn_installer.dmg $INTEL_FTN_COMPILER_INSTALLER_URL
+        
+          dmg=$(basename "$INTEL_CPP_COMPILER_INSTALLER_URL" .dmg)
+          hdiutil attach cpp_installer.dmg
+          echo "installing C/C++ compiler version $INTEL_COMPILER_VERSION"
+          sudo /Volumes/$dmg/bootstrapper.app/Contents/MacOS/bootstrapper --action install --eula=accept --continue-with-optional-error=yes --log-dir=. --install-dir "$INTEL_HPCKIT_INSTALL_PATH"
+          hdiutil detach /Volumes/cpp_installer -quiet
+        
+          dmg=$(basename "$INTEL_FTN_COMPILER_INSTALLER_URL" .dmg)
+          hdiutil attach ftn_installer.dmg
+          echo "installing Fortran compiler version $INTEL_COMPILER_VERSION"
+          sudo /Volumes/$dmg/bootstrapper.app/Contents/MacOS/bootstrapper --action install --eula=accept --continue-with-optional-error=yes --log-dir=. --install-dir "$INTEL_HPCKIT_INSTALL_PATH"
+          hdiutil detach /Volumes/ftn_installer -quiet
+        else
+          curl -sL $INTEL_CPP_COMPILER_INSTALLER_URL --output $RUNNER_TEMP/cpp_installer.exe
+          curl -sL $INTEL_FTN_COMPILER_INSTALLER_URL --output $RUNNER_TEMP/ftn_installer.exe
+        
+          $RUNNER_TEMP/cpp_installer.exe -a --install-dir=$INTEL_HPCKIT_INSTALL_PATH --action install --eula=accept --log-dir=.
+          $RUNNER_TEMP/ftn_installer.exe -a --install-dir=$INTEL_HPCKIT_INSTALL_PATH --action install --eula=accept --log-dir=.
+        fi
 
-    - name: Install compilers (Windows)
-      if: runner.os == 'Windows' && steps.cache-ifort.outputs.cache-hit != 'true'
-      shell: cmd
-      run: |
-        :: download HPC kit installer and install Intel fortran
-        call "%GITHUB_ACTION_PATH%\scripts\install_windows.bat" "${{ env.INTEL_HPCKIT_INSTALL_PATH }}" "${{ env.INTEL_HPCKIT_INSTALLER_URL }}" "${{ env.INTEL_HPCKIT_COMPONENTS }}"
+    # - name: Install compilers
+    #   if: runner.os != 'Windows' && steps.cache-ifort.outputs.cache-hit != 'true'
+    #   shell: bash
+    #   run: |
+    #     echo "downloading and running HPC kit installer"
+    #     os=$(echo $RUNNER_OS | tr '[:upper:]' '[:lower:]')
+    #     "${{ github.action_path }}/scripts/install_$os.sh" "${{ env.INTEL_HPCKIT_INSTALL_PATH }}" "${{ env.INTEL_HPCKIT_INSTALLER_URL }}" "${{ env.INTEL_HPCKIT_COMPONENTS }}"
 
-    - name: Save cache
-      if: steps.cache-ifort.outputs.cache-hit != 'true'
-      uses: martijnhols/actions-cache/save@v3
-      with:
-        path: ${{ env.INTEL_HPCKIT_INSTALL_PATH }}
-        key: intelfortran-${{ runner.os }}-${{ env.INTEL_HPCKIT_VERSION }}-${{ env.INTEL_HPCKIT_COMPONENTS }}
+    # - name: Install compilers (Windows)
+    #   if: runner.os == 'Windows' && steps.cache-ifort.outputs.cache-hit != 'true'
+    #   shell: cmd
+    #   run: |
+    #     :: download HPC kit installer and install Intel fortran
+    #     call "%GITHUB_ACTION_PATH%\scripts\install_windows.bat" "${{ env.INTEL_HPCKIT_INSTALL_PATH }}" "${{ env.INTEL_HPCKIT_INSTALLER_URL }}" "${{ env.INTEL_HPCKIT_COMPONENTS }}"
+
+    # - name: Save cache
+    #   if: steps.cache-ifort.outputs.cache-hit != 'true'
+    #   uses: martijnhols/actions-cache/save@v3
+    #   with:
+    #     path: ${{ env.INTEL_HPCKIT_INSTALL_PATH }}
+    #     key: intelfortran-${{ runner.os }}-${{ env.INTEL_HPCKIT_VERSION }}-${{ env.INTEL_HPCKIT_COMPONENTS }}
 
     - name: Configure system path
       if: runner.os != 'Windows'
