@@ -1,16 +1,16 @@
 name: MODFLOW 6 integration testing
 on:
-  push:
-    branches:
-      - main
-      - develop
-      - ci-diagnose*
-  pull_request:
-    branches:
-      - main
-      - develop
-  schedule:
-    - cron: '0 6 * * *' # run at 6 AM UTC every day
+  # push:
+  #   branches:
+  #     - main
+  #     - develop
+  #     - ci-diagnose*
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - develop
+  # schedule:
+  #   - cron: '0 6 * * *' # run at 6 AM UTC every day
 jobs:
   test_build_modflow:
     name: Test build modflow6

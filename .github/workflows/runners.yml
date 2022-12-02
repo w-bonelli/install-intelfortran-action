@@ -1,14 +1,14 @@
 name: Runner testing
 on:
-  push:
-    branches:
-      - main
-      - develop*
-      - ci-diagnose*
-  pull_request:
-    branches:
-      - main
-      - develop*
+  # push:
+  #   branches:
+  #     - main
+  #     - develop*
+  #     - ci-diagnose*
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - develop*
 jobs:
   test:
     name: Test
