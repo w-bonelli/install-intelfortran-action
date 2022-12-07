@@ -52,6 +52,7 @@ Besides oneAPI environment variables configured by `setvars` scripts (whose name
 - `INTEL_COMPILER_VERSION` is the version of the installed compilers (this may be different than the version of the oneAPI HPC Toolkit)
 - `FC` is set to `ifort`
 - `CC` is set to `icc` on Linux and macOS and `icl` on Windows
+- `SETVARS_COMPLETED` indicates whether oneAPI environment variables have been configured (will be `1` if input `setvars` is `true`, otherwise `0` &mdash; the numeric values are to conform to the convention used for this variable by Intel
 
 **Note:** GitHub Actions does not preserve environment variables between steps by default &mdash; this action persists them via the [`GITHUB_ENV` environment file](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable).
 

@@ -173,7 +173,6 @@ runs:
       run: |
         source "$INTEL_HPCKIT_INSTALL_PATH/setvars.sh"
         env | grep oneapi >> $GITHUB_ENV
-        echo "SETVARS_COMPLETED=1" >> $GITHUB_ENV
 
     # - name: Setup MSBuild
     #   if: runner.os == 'Windows'
@@ -205,7 +204,11 @@ runs:
         :: this script fails when install location is not the default
         call "%INTEL_HPCKIT_INSTALL_PATH%\compiler\%LATEST%\env\vars.bat"
         set | findstr /c:"oneAPI" >> "%GITHUB_ENV%"
-        echo SETVARS_COMPLETED="1">>"%GITHUB_ENV%"
+
+    - name: Set SETVARS_COMPLETED
+      if: inputs.setvars == 'true'
+      shell: bash
+      run: echo "SETVARS_COMPLETED=1" >> $GITHUB_ENV
 
     # GitHub Actions prepends GNU linker to the PATH before all bash steps, hide it so MSVC linker is found
     - name: Hide GNU linker (Windows)
