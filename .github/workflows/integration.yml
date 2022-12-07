@@ -153,8 +153,9 @@ jobs:
       - name: Checkout pymake
         uses: actions/checkout@v3
         with:
-          repository: modflowpy/pymake
+          repository: w-bonelli/pymake
           path: pymake
+          ref: intel-setvars
 
       - name: Setup Graphviz
         if: runner.os == 'Linux'
