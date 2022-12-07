@@ -175,13 +175,17 @@ runs:
         env | grep oneapi >> $GITHUB_ENV
         echo "SETVARS_COMPLETED=1" >> $GITHUB_ENV
 
+    - name: Setup MSBuild
+      if: runner.os == 'Windows'
+      uses: microsoft/setup-msbuild@v1.1
+
     - name: Run setvars scripts (Windows)
       if: runner.os == 'Windows' && inputs.setvars == 'true'
       shell: cmd
       run: |
-        call "%INTEL_HPCKIT_INSTALL_PATH%\setvars-vcvarsall.bat"
-        :: this script fails when install location is not the default
+        :: call "%INTEL_HPCKIT_INSTALL_PATH%\setvars-vcvarsall.bat"
         for /f "tokens=* usebackq" %%f in (`dir /b "%INTEL_HPCKIT_INSTALL_PATH%\compiler\" ^| findstr /V latest ^| sort`) do @set "LATEST=%%f"
+        :: this script fails when install location is not the default
         call "%INTEL_HPCKIT_INSTALL_PATH%\compiler\%LATEST%\env\vars.bat"
         set | findstr /c:"oneAPI" >> "%GITHUB_ENV%"
         echo SETVARS_COMPLETED=1>>"%GITHUB_ENV%"
