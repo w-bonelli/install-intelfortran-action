@@ -175,15 +175,32 @@ runs:
         env | grep oneapi >> $GITHUB_ENV
         echo "SETVARS_COMPLETED=1" >> $GITHUB_ENV
 
-    - name: Setup MSBuild
-      if: runner.os == 'Windows'
-      uses: microsoft/setup-msbuild@v1.1
+    # - name: Setup MSBuild
+    #   if: runner.os == 'Windows'
+    #   uses: microsoft/setup-msbuild@v1.1
 
-    - name: Run setvars scripts (Windows)
+    - name: Find VS versions
+      id: find-vcvars
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $products = 'Community','Professional','Enterprise','BuildTools' | %{ "Microsoft.VisualStudio.Product.$_" }
+        $vswhere = Get-Command 'vswhere'
+        $vs = & $vswhere.Path -products $products -latest -format json | ConvertFrom-Json
+        $script = Join-Path $vs.installationPath 'BuildTools' 'VC' 'Auxiliary' 'Build' 'vcvars64.bat'
+        echo "vcvars_script=$script" >> $GITHUB_OUTPUT
+
+    - name: Run vcvars script (Windows)
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        call ${{ steps.find-vcvars.outputs.vcvars_script }}
+        :: call "%INTEL_HPCKIT_INSTALL_PATH%\setvars-vcvarsall.bat"
+
+    - name: Run setvars script (Windows)
       if: runner.os == 'Windows' && inputs.setvars == 'true'
       shell: cmd
       run: |
-        :: call "%INTEL_HPCKIT_INSTALL_PATH%\setvars-vcvarsall.bat"
         for /f "tokens=* usebackq" %%f in (`dir /b "%INTEL_HPCKIT_INSTALL_PATH%\compiler\" ^| findstr /V latest ^| sort`) do @set "LATEST=%%f"
         :: this script fails when install location is not the default
         call "%INTEL_HPCKIT_INSTALL_PATH%\compiler\%LATEST%\env\vars.bat"
