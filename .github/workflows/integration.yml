@@ -153,9 +153,8 @@ jobs:
       - name: Checkout pymake
         uses: actions/checkout@v3
         with:
-          repository: w-bonelli/pymake
+          repository: modflowpy/pymake
           path: pymake
-          ref: intel-setvars
 
       - name: Setup Graphviz
         if: runner.os == 'Linux'
@@ -174,6 +173,7 @@ jobs:
         uses: ./
         with:
           path: ${{ runner.os != 'Windows' && 'bin' || 'C:\Program Files (x86)\Intel\oneAPI' }}
+          setvars: false
 
       - name: Download examples
         working-directory: pymake
