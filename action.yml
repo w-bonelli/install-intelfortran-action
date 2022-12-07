@@ -159,6 +159,7 @@ runs:
         
         echo "persisting environment"
         env | grep oneapi >> $GITHUB_ENV
+        echo "SETVARS_COMPLETED=1" >> $GITHUB_ENV
 
     # GitHub Actions prepends GNU linker to the PATH before all bash steps, hide it so MSVC linker is found
     - name: Hide GNU linker
@@ -182,3 +183,4 @@ runs:
         
         echo persisting environment
         set | findstr /c:"oneAPI" >> "%GITHUB_ENV%"
+        echo SETVARS_COMPLETED=1>>"%GITHUB_ENV%"
