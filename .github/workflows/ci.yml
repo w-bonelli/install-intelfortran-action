@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-2019, windows-2022 ]
+        os: [ ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-2019, windows-2022 ]
         path: [ absolute, relative, tilde, default ]
         setvars: [ 'true', 'false' ]
     steps:
@@ -73,11 +73,6 @@ jobs:
         uses: ./
         with:
           setvars: ${{ matrix.setvars }}
-
-      - name: Show contents of installation directory
-        if: runner.os == 'Windows'
-        shell: powershell
-        run: Get-ChildItem -Recurse -Directory $env:INTEL_HPCKIT_INSTALL_PATH
 
       - name: Set environment variables
         if: runner.os != 'Windows' && matrix.setvars != 'true'

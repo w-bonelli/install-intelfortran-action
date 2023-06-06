@@ -69,7 +69,7 @@ if ($output -match "hello world") {
 }
 
 # make sure MKL libraries exist
-if (test-path "$env:INTEL_HPCKIT_INSTALL_PATH\latest\lib\intel64") {
+if (test-path "$env:INTEL_HPCKIT_INSTALL_PATH\mkl\latest\lib\intel64") {
     write-output "MKL libraries found"
 } else {
     write-output "MKL libraries not found"
