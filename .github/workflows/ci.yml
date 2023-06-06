@@ -74,6 +74,11 @@ jobs:
         with:
           setvars: ${{ matrix.setvars }}
 
+      - name: Show contents of installation directory
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: Get-ChildItem -Recurse -Directory $env:INTEL_HPCKIT_INSTALL_PATH
+
       - name: Set environment variables
         if: runner.os != 'Windows' && matrix.setvars != 'true'
         shell: bash

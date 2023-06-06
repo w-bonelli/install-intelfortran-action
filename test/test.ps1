@@ -67,3 +67,11 @@ if ($output -match "hello world") {
     write-output "icx unexpected output: $output"
     exit 1
 }
+
+# make sure MKL libraries exist
+if (test-path "$env:INTEL_HPCKIT_INSTALL_PATH\latest\lib\intel64") {
+    write-output "MKL libraries found"
+} else {
+    write-output "MKL libraries not found"
+    exit 1
+}

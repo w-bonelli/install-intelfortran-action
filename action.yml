@@ -108,6 +108,17 @@ runs:
         echo downloading and running HPC kit installer
         call "%GITHUB_ACTION_PATH%\scripts\install_windows.bat" "${{ env.INTEL_HPCKIT_INSTALL_PATH }}" "${{ env.INTEL_HPCKIT_INSTALLER_URL }}" "${{ env.INTEL_HPCKIT_COMPONENTS }}"
 
+    - name: Install MKL (Windows)
+      if: runner.os == 'Windows' && steps.cache-ifort.outputs.cache-hit != 'true'
+      shell: cmd
+      env:
+        INTEL_MKL_INSTALL_PATH: ${{ env.INTEL_HPCKIT_INSTALL_PATH }}
+        INTEL_MKL_INSTALLER_URL: "https://registrationcenter-download.intel.com/akdlm/IRC_NAS/e0195cbc-2c9b-4489-9542-c1447e70df30/w_onemkl_p_2023.1.0.46356_offline.exe"
+      run: |
+        echo downloading and running MKL installer
+        call "%GITHUB_ACTION_PATH%\scripts\install_windows.bat" "${{ env.INTEL_MKL_INSTALL_PATH }}" "${{ env.INTEL_MKL_INSTALLER_URL }}"
+        dir "${{ env.INTEL_MKL_INSTALL_PATH }}"
+
     - name: Save cache
       if: inputs.cache == 'true' && steps.cache-ifort.outputs.cache-hit != 'true'
       uses: martijnhols/actions-cache/save@v3
