@@ -89,10 +89,10 @@ jobs:
           set | findstr /c:"oneAPI" >> "%GITHUB_ENV%"
 
       # not needed atm, but just in case any future tests require this
-      - name: Set SETVARS_COMPLETED
-        if: matrix.setvars != 'true'
-        shell: bash
-        run: echo "SETVARS_COMPLETED=1" >> $GITHUB_ENV
+      # - name: Set SETVARS_COMPLETED
+      #   if: matrix.setvars != 'true'
+      #   shell: bash
+      #   run: echo "SETVARS_COMPLETED=1" >> $GITHUB_ENV
 
       - name: Test compilers (Linux & Mac)
         if: runner.os != 'Windows'
